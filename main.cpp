@@ -11,7 +11,12 @@
 using namespace std;
 
 int main(int argc, char *argv[]){
-
-    cout << "TEST" << endl;
+    Print(" model2 - SIMLIB/C++ example\n");
+    SetOutput("model2.out");
+    Init(0,1000);              // experiment initialization for time 0..1000
+    (new Generator)->Activate(); // customer generator
+    Run();                     // simulation
+    Box.Output();              // print of results
+    Table.Output();
     return 0;
 }
