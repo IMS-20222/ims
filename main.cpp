@@ -22,7 +22,8 @@ void exit_ims(string errorMessage) {
             " -J Percentage of human error in BMC\n"
             " -K Percentage of Qassam failure\n"
             " -M Percentage of Qassams that need operator intervention\n"
-            " -N Uniform time of Qassam flight [seconds]%s\n", RED_BEGIN, errorMessage.c_str(), COLOR_END, CYAN_BEGIN,
+            " -N Uniform time of Qassam flight [seconds]\n"
+            " -T Time to reload Iron Dome [minutes]%s\n", RED_BEGIN, errorMessage.c_str(), COLOR_END, CYAN_BEGIN,
             COLOR_END);
     exit(EXIT_FAILURE);
 }
@@ -58,10 +59,10 @@ int main(int argc, char *argv[]) {
                     exit_ims("!!!-Z parameter can't be higher than 1440!!!");
                 }
                 string tmp = argv[i + 1];
-                if (atoi(argv[i + 1]) > 100  || tmp[0] == '-') {
-                    exit_ims("!!!-Z parameter must be between 0 and 100!!!");
+                if (tmp[0] == '-') {
+                    exit_ims("!!!-Z parameter can't be negative!!!");
                 }
-                args.Z = atoi(argv[i + 1])*60;
+                args.Z = atoi(argv[i + 1]) * 60;
             }
             // Check -J option
             else if (optionToFind == "-J") {
@@ -103,16 +104,28 @@ int main(int argc, char *argv[]) {
                 }
                 args.N = atoi(argv[i + 1]);
             }
+            // Check -T option
+            else if (optionToFind == "-T") {
+                if (argv[i + 1] == nullptr) {
+                    exit_ims("!!!You are missing argument for -N parameter!!!");
+                }
+                string tmp = argv[i + 1];
+                if (tmp[0] == '-') {
+                    exit_ims("!!!-T parameter can't be negative!!!");
+                }
+                args.T = atoi(argv[i + 1]) * 60;
+            }
         }
     }
-    cout << "*** ENTERED ARGS ***" << endl; // TODO DELETE
-    cout << "R: " << args.R << " Qassams/day"<< endl; // TODO DELETE
-    cout << "Z: " << args.Z << " sec" << endl; // TODO DELETE
-    cout << "J: " << args.J << " %" << endl; // TODO DELETE
-    cout << "K: " << args.K << " %" << endl; // TODO DELETE
-    cout << "M: " << args.M << " %" << endl; // TODO DELETE
-    cout << "N: " << args.N << " sec"<< endl; // TODO DELETE
-    cout << "*********************" << endl; // TODO DELETE
+    cout << "*** ENTERED ARGS ***" << endl;
+    cout << "R: " << args.R << " Qassams/day"<< endl;
+    cout << "Z: " << args.Z << " sec" << endl;
+    cout << "J: " << args.J << " %" << endl;
+    cout << "K: " << args.K << " %" << endl;
+    cout << "M: " << args.M << " %" << endl;
+    cout << "N: " << args.N << " sec"<< endl;
+    cout << "T: " << args.T << " sec"<< endl;
+    cout << "*********************" << endl;
 
 
 //    Print("***** MODEL1 *****\n");

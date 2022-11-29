@@ -35,6 +35,9 @@ struct argValues{
     unsigned int M = 5;
     // Uniform time of Qassam flight [seconds]
     unsigned int N = 30;
+    // Time to reload Iron Dome [seconds]
+    unsigned int T = 1200;
+
 };
 
 //// global objects:
