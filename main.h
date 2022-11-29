@@ -11,6 +11,7 @@
 #include <string>
 #include <simlib.h>
 #include <string.h>
+#include <iomanip>
 
 #define RED_BEGIN "\033[0;31m"
 #define CYAN_BEGIN "\033[1;36m"

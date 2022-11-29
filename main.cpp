@@ -117,15 +117,15 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    cout << "*** ENTERED ARGS ***" << endl;
-    cout << "R: " << args.R << " Qassams/day"<< endl;
-    cout << "Z: " << args.Z << " sec" << endl;
-    cout << "J: " << args.J << " %" << endl;
-    cout << "K: " << args.K << " %" << endl;
-    cout << "M: " << args.M << " %" << endl;
-    cout << "N: " << args.N << " sec"<< endl;
-    cout << "T: " << args.T << " sec"<< endl;
-    cout << "*********************" << endl;
+    cout << "******************************* ENTERED ARGS *******************************" << endl;
+    cout << setfill('.') << setw(60) << left << "R How many Qassams per day: " << right << ' ' <<  args.R << " Qassams/day"<< endl;
+    cout << setw(60) << left << "Z How long it takes to fire all rockets per day: "  << right << ' ' << args.Z << " sec" << endl;
+    cout << setw(60) << left << "J Percentage of human error in BMC: "  << right << ' ' << args.J << " %" << endl;
+    cout << setw(60) << left << "K Percentage of Qassam failure: "  << right << ' ' << args.K << " %" << endl;
+    cout << setw(60) << left << "M Percentage of Qassams that need operator intervention: "  << right << ' ' << args.M << " %" << endl;
+    cout << setw(60) << left << "N Uniform time of Qassam flight: "  << right << ' ' << args.N << " sec"<< endl;
+    cout << setw(60) << left << "T Time to reload Iron Dome: "  << right << ' ' << args.T << " sec"<< endl;
+    cout << "****************************************************************************" << endl;
 
 
 //    Print("***** MODEL1 *****\n");
