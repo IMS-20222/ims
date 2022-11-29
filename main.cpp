@@ -47,6 +47,10 @@ int flewToIsrael;
 int criticalTargetHits;
 int nonCriticalTargetHits;
 
+IronDomeLauncher *launcher01;
+IronDomeLauncher *launcher02;
+IronDomeLauncher *launcher03;
+
 int main(int argc, char *argv[]) {
     // Argument parser
     if (argc >= 2) {
@@ -144,17 +148,20 @@ int main(int argc, char *argv[]) {
     RandomSeed(time(nullptr));
 
     //Generating R Qassams
-    for(unsigned i = 0; i < args.R; i++){
+    for(unsigned int i = 0; i < args.R; i++){
         (new QassamGenerator)->Activate();
     }
+    // Generating battery of launchers (3)
+    launcher01 = new IronDomeLauncher;
+    launcher02 = new IronDomeLauncher;
+    launcher03 = new IronDomeLauncher;
 
     Run();
     cout << "\nFELL IN GAZA   FLEW TO IZRAEL" << endl;
-    Print(fellInGaza, flewToIsrael);
+    cout << fellInGaza << "   " << flewToIsrael << endl;
     cout << "\nCRIT HIT   NONCRIT HIT" << endl;
-    Print(criticalTargetHits, nonCriticalTargetHits);
+    cout << criticalTargetHits << "   " << nonCriticalTargetHits << endl;
     cout << endl;
-
 
 
 

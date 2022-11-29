@@ -16,16 +16,21 @@
 #define RED_BEGIN "\033[0;31m"
 #define CYAN_BEGIN "\033[1;36m"
 #define COLOR_END "\033[0m"
-// seconds in day
-#define DAY 86400
+
+#define DAY 86400 // seconds in day
 #define QASSAM_CRITICAL 1.0/3.0
+#define QASSAM_PRICE 800
+#define TAMIR_PRICE 125000
+
 using namespace std;
 
 
 string optionToFind;
 
-// Struct for storing arguments
-// Argument have default value in case user doesn't enter them
+/**
+ * Struct for storing program arguments
+ * Arguments have default value in case user doesn't enter them
+ */
 struct argValues{
     // How many Qassams per day
     unsigned int R = 300;
@@ -54,6 +59,35 @@ extern argValues args;
 // Initialize radar store
 Store radarStore("Radar", 1000); // p28
 
+class IronDomeLauncher : public Process {
+    public: int rocketMagazine = 20;
+
+    void Behavior() {
+        while(1){
+        //start: TODO DELETE
+        //rocketMagazine--;
+        if (rocketMagazine == 0) {
+            cout << Time << " RELOADING" << endl;
+            cout << args.T << endl;
+            Wait(args.T);
+            cout << Time << " RELOAD FINISHED" << endl;
+            rocketMagazine = 20;
+        }
+        Passivate();}
+        //goto start; TODO DELETE
+    }
+    void GetRocketMagazine(int launcherID) {
+        cout << launcherID << "# " <<Time <<" Left in mag " << rocketMagazine << endl;
+
+    }
+
+};
+
+
+
+extern IronDomeLauncher *launcher01;
+extern IronDomeLauncher *launcher02;
+extern IronDomeLauncher *launcher03;
 
 
 class Qassam : public Process { // TODO
@@ -67,16 +101,46 @@ class Qassam : public Process { // TODO
         } else { // t4
             // Qassam is not destroyed
             flewToIsrael++; // p29
-            if(radarStore.Full()){ // t39
-                if(Random() < (1 - QASSAM_CRITICAL)) { // t40
+            if (radarStore.Full()) { // t39
+                if (Random() < (1 - QASSAM_CRITICAL)) { // t40
                     nonCriticalTargetHits++; // p34
                     Cancel();
-                }else{ // t41
+                } else { // t41
                     criticalTargetHits++; // p35
                     Cancel();
                 }
-            }else{ // P6
+            } else { // p6
                 Enter(radarStore, 1);
+                if (Random() < (args.M * 0.01)) { // t7 Qassam needs operator intervention
+
+                } else { // t6 Iron Dome will handle Qassam on its own
+                    if (Random() < 1 - QASSAM_CRITICAL) { // t20
+                        nonCriticalTargetHits++; // p6
+                        Leave(radarStore, 1);
+                        Cancel();
+                    } else { // t21
+                        if(launcher01->rocketMagazine) { // t23
+                            launcher01->rocketMagazine--;
+                            launcher01->GetRocketMagazine(1);
+                            launcher01->Activate();
+                        } else if(launcher02->rocketMagazine) { // t27
+                            launcher02->rocketMagazine--;
+                            launcher02->GetRocketMagazine(2);
+                            launcher02->Activate();
+                        } else if(launcher03->rocketMagazine) { // t31
+                            launcher03->rocketMagazine--;
+                            launcher03->GetRocketMagazine(3);
+                            launcher03->Activate();
+                        } else { // t42
+                            criticalTargetHits++; // p36
+                            Leave(radarStore, 1);
+                            Cancel();
+                        }
+                    }
+                }
+
+                Leave(radarStore, 1);
+                Cancel();
             }
         }
     }
@@ -90,12 +154,6 @@ class QassamGenerator : public Event {  // model of system's input
         //qassam->Output();
     }
 };
-
-
-
-
-
-
 
 
 
