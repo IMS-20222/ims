@@ -16,10 +16,13 @@
 #define RED_BEGIN "\033[0;31m"
 #define CYAN_BEGIN "\033[1;36m"
 #define COLOR_END "\033[0m"
-
-using namespace std;
 // seconds in day
-#define DAY 86400;
+#define DAY 86400
+#define QASSAM_CRITICAL 1.0/3.0
+using namespace std;
+
+
+string optionToFind;
 
 // Struct for storing arguments
 // Argument have default value in case user doesn't enter them
@@ -38,8 +41,71 @@ struct argValues{
     unsigned int N = 30;
     // Time to reload Iron Dome [seconds]
     unsigned int T = 1200;
-
 };
+
+extern int criticalTargetHits;
+extern int nonCriticalTargetHits;
+
+
+extern int fellInGaza;
+extern int flewToIsrael;
+extern argValues args;
+
+// Initialize radar store
+Store radarStore("Radar", 1000); // p28
+
+
+
+class Qassam : public Process { // TODO
+    void Behavior() {
+        // Qassam waiting to be fired - p1
+        Wait(Uniform(0, args.Z)); // t2
+        if (Random() < (args.K * 0.01)) {
+            // Qassam is destroyed
+            fellInGaza++;
+            Cancel(); // t3
+        } else { // t4
+            // Qassam is not destroyed
+            flewToIsrael++; // p29
+            if(radarStore.Full()){ // t39
+                if(Random() < (1 - QASSAM_CRITICAL)) { // t40
+                    nonCriticalTargetHits++; // p34
+                    Cancel();
+                }else{ // t41
+                    criticalTargetHits++; // p35
+                    Cancel();
+                }
+            }else{ // P6
+                Enter(radarStore, 1);
+            }
+        }
+    }
+};
+
+
+class QassamGenerator : public Event {  // model of system's input
+    void Behavior() {                  // --- behavior specification ---
+        Qassam *qassam = new Qassam;
+        qassam->Activate();
+        //qassam->Output();
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //// global objects:
 //Facility  Box("Box");
@@ -65,24 +131,24 @@ struct argValues{
 
 
 
-//  deklarace  globálních  objektů
-Facility  Box("Linka");
-Histogram Tabulka("Tabulka",0,50,10);
-
-class Zakaznik : public Process { // třída zákazníků
-    double Prichod;                 // atribut každého zákazníka
-    void Behavior() {               // popis chování zákazníka
-        Prichod = Time;               // čas příchodu zákazníka
-        Seize(Box);                   // obsazení zařízení Box
-        Wait(10);                     // obsluha
-        Release(Box);                 // uvolnění
-        Tabulka(Time-Prichod);        // doba obsluhy a čekání
-    }
-};
-
-class Generator : public Event {  // generátor zákazníků
-    void Behavior() {               // popis chování generátoru
-        (new Zakaznik)->Activate();     // nový zákazník v čase Time
-        Activate(Time+Exponential(1e3/150)); // interval mezi příchody
-    }
-};
+////  deklarace  globálních  objektů
+//Facility  Box("Linka");
+//Histogram Tabulka("Tabulka",0,50,10);
+//
+//class Zakaznik : public Process { // třída zákazníků
+//    double Prichod;                 // atribut každého zákazníka
+//    void Behavior() {               // popis chování zákazníka
+//        Prichod = Time;               // čas příchodu zákazníka
+//        Seize(Box);                   // obsazení zařízení Box
+//        Wait(10);                     // obsluha
+//        Release(Box);                 // uvolnění
+//        Tabulka(Time-Prichod);        // doba obsluhy a čekání
+//    }
+//};
+//
+//class Generator : public Event {  // generátor zákazníků
+//    void Behavior() {               // popis chování generátoru
+//        (new Zakaznik)->Activate();     // nový zákazník v čase Time
+//        Activate(Time+Exponential(1e3/150)); // interval mezi příchody
+//    }
+//};

@@ -12,7 +12,6 @@
 using namespace std;
 
 argValues args;
-
 // Function for easier program exiting
 void exit_ims(string errorMessage) {
     fprintf(stderr,
@@ -28,7 +27,25 @@ void exit_ims(string errorMessage) {
     exit(EXIT_FAILURE);
 }
 
-string optionToFind;
+// Function for printing out program arguments values
+void outputProgramArgs() {
+    cout << "******************************* ENTERED ARGS *******************************" << endl;
+    cout << setfill('.') << setw(60) << left << "R How many Qassams per day: " << right << ' ' <<  args.R << " Qassams/day"<< endl;
+    cout << setw(60) << left << "Z How long it takes to fire all rockets per day: "  << right << ' ' << args.Z << " sec" << endl;
+    cout << setw(60) << left << "J Percentage of human error in BMC: "  << right << ' ' << args.J << " %" << endl;
+    cout << setw(60) << left << "K Percentage of Qassam failure: "  << right << ' ' << args.K << " %" << endl;
+    cout << setw(60) << left << "M Percentage of Qassams that need operator intervention: "  << right << ' ' << args.M << " %" << endl;
+    cout << setw(60) << left << "N Uniform time of Qassam flight: "  << right << ' ' << args.N << " sec"<< endl;
+    cout << setw(60) << left << "T Time to reload Iron Dome: "  << right << ' ' << args.T << " sec"<< endl;
+    cout << "****************************************************************************" << endl;
+}
+
+
+int fellInGaza;
+int flewToIsrael;
+
+int criticalTargetHits;
+int nonCriticalTargetHits;
 
 int main(int argc, char *argv[]) {
     // Argument parser
@@ -80,6 +97,10 @@ int main(int argc, char *argv[]) {
                 if (argv[i + 1] == nullptr) {
                     exit_ims("!!!You are missing argument for -K parameter!!!");
                 }
+                string tmp = argv[i + 1];
+                if (atoi(argv[i + 1]) > 100  || tmp[0] == '-') {
+                    exit_ims("!!!-K parameter must be between 0 and 100!!!");
+                }
                 args.K = atoi(argv[i + 1]);
             }
             // Check -M option
@@ -117,15 +138,29 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    cout << "******************************* ENTERED ARGS *******************************" << endl;
-    cout << setfill('.') << setw(60) << left << "R How many Qassams per day: " << right << ' ' <<  args.R << " Qassams/day"<< endl;
-    cout << setw(60) << left << "Z How long it takes to fire all rockets per day: "  << right << ' ' << args.Z << " sec" << endl;
-    cout << setw(60) << left << "J Percentage of human error in BMC: "  << right << ' ' << args.J << " %" << endl;
-    cout << setw(60) << left << "K Percentage of Qassam failure: "  << right << ' ' << args.K << " %" << endl;
-    cout << setw(60) << left << "M Percentage of Qassams that need operator intervention: "  << right << ' ' << args.M << " %" << endl;
-    cout << setw(60) << left << "N Uniform time of Qassam flight: "  << right << ' ' << args.N << " sec"<< endl;
-    cout << setw(60) << left << "T Time to reload Iron Dome: "  << right << ' ' << args.T << " sec"<< endl;
-    cout << "****************************************************************************" << endl;
+    outputProgramArgs();
+
+    Init(0, DAY);
+    RandomSeed(time(nullptr));
+
+    //Generating R Qassams
+    for(unsigned i = 0; i < args.R; i++){
+        (new QassamGenerator)->Activate();
+    }
+
+    Run();
+    cout << "\nFELL IN GAZA   FLEW TO IZRAEL" << endl;
+    Print(fellInGaza, flewToIsrael);
+    cout << "\nCRIT HIT   NONCRIT HIT" << endl;
+    Print(criticalTargetHits, nonCriticalTargetHits);
+    cout << endl;
+
+
+
+
+    return 0;
+}
+
 
 
 //    Print("***** MODEL1 *****\n");
@@ -134,7 +169,7 @@ int main(int argc, char *argv[]) {
 //    Run();                     // simulace
 //    Box.Output();              // tisk výsledků
 //    Tabulka.Output();
-        return 0;
+//        return 0;
 
 
 
@@ -146,4 +181,3 @@ int main(int argc, char *argv[]) {
 //    Box.Output();              // print of results
 //    Table.Output();
 //    return 0;
-    }
