@@ -19,6 +19,7 @@
 
 #define DAY 86400 // seconds in day
 #define QASSAM_CRITICAL 1.0/3.0
+#define TAMIR_ACCURACY 0.9
 #define QASSAM_PRICE 800
 #define TAMIR_PRICE 125000
 
@@ -42,14 +43,19 @@ struct argValues{
     unsigned int K = 20;
     // Qassams that need operator intervention in %
     unsigned int M = 5;
-    // Uniform time of Qassam flight [seconds]
+    // Normal time of Qassam flight [seconds]
     unsigned int N = 30;
     // Time to reload Iron Dome [seconds]
     unsigned int T = 1200;
 };
 
 extern int criticalTargetHits;
-extern int nonCriticalTargetHits;
+extern int qassamAimedAtNonCriticalTarget;
+extern int qassamsDodgedIronDome;
+extern int qassamsShotDown;
+extern int failedInterceptionByTamir;
+extern int missFiredTamirsDueToHumanError;
+extern int rocketsTimedOut;
 
 
 extern int fellInGaza;
@@ -58,81 +64,165 @@ extern argValues args;
 
 // Initialize radar store
 Store radarStore("Radar", 1000); // p28
+// Initialize BMC store (interception officers inside BMC)
+Store bmcStore("BMC", 2); // p28
 
 class IronDomeLauncher : public Process {
     public: int rocketMagazine = 20;
 
     void Behavior() {
-        while(1){
-        //start: TODO DELETE
-        //rocketMagazine--;
-        if (rocketMagazine == 0) {
-            cout << Time << " RELOADING" << endl;
-            cout << args.T << endl;
-            Wait(args.T);
-            cout << Time << " RELOAD FINISHED" << endl;
-            rocketMagazine = 20;
-        }
-        Passivate();}
-        //goto start; TODO DELETE
+        while(1) {
+            //start: TODO DELETE
+            //rocketMagazine--;
+            if (rocketMagazine == 0) {
+                //cout << Time << " RELOADING" << endl;
+                //cout << args.T << endl;
+                Wait(args.T);
+                //cout << Time << " RELOAD FINISHED" << endl;
+                rocketMagazine = 20;
+            }
+            Passivate();
+            }
+            //goto start; TODO DELETE
     }
+
     void GetRocketMagazine(int launcherID) {
         cout << launcherID << "# " <<Time <<" Left in mag " << rocketMagazine << endl;
-
     }
-
 };
-
-
 
 extern IronDomeLauncher *launcher01;
 extern IronDomeLauncher *launcher02;
 extern IronDomeLauncher *launcher03;
 
 
+class RocketFlightTimeout: public Event {
+    Process *rocket;
+    public:
+        RocketFlightTimeout(Process *rocket): rocket(rocket) {
+            Activate(Time + args.N);
+        }
+    void Behavior() {
+        Print(rocket->Name().c_str());
+        cout << " TIMED OUT" << endl;
+        delete rocket;
+        bmcStore.Leave(1);
+        if (Random() < 1 - QASSAM_CRITICAL) { // t38
+            qassamAimedAtNonCriticalTarget++;
+        } else { // t37
+            criticalTargetHits++;
+        }
+        radarStore.Leave(1);
+        rocketsTimedOut++;
+    }
+};
+
+
+
 class Qassam : public Process { // TODO
     void Behavior() {
         // Qassam waiting to be fired - p1
         Wait(Uniform(0, args.Z)); // t2
+        // Initialize rocket flight timer
+        Event *rft = new RocketFlightTimeout(this);
         if (Random() < (args.K * 0.01)) {
             // Qassam is destroyed
             fellInGaza++;
+            delete rft;
             Cancel(); // t3
         } else { // t4
             // Qassam is not destroyed
             flewToIsrael++; // p29
             if (radarStore.Full()) { // t39
                 if (Random() < (1 - QASSAM_CRITICAL)) { // t40
-                    nonCriticalTargetHits++; // p34
+                    qassamAimedAtNonCriticalTarget++; // p34
+                    delete rft;
                     Cancel();
                 } else { // t41
                     criticalTargetHits++; // p35
+                    delete rft;
                     Cancel();
                 }
             } else { // p6
                 Enter(radarStore, 1);
                 if (Random() < (args.M * 0.01)) { // t7 Qassam needs operator intervention
+                    Enter(bmcStore, 1); // t8
+                    Wait(5); // t9
+                    if (Random() < (args.J * 0.01)){ // t11
+                        Leave(bmcStore, 1);
+                        if (Random() < 1 - QASSAM_CRITICAL) {
+                            criticalTargetHits++; // p27
+                            Leave(radarStore, 1);
+                            delete rft;
+                            Cancel();
+                        } else {
+                            missFiredTamirsDueToHumanError++; // p24
+                            if(launcher01->rocketMagazine) { // t23
+                                launcher01->rocketMagazine--;
+                                //launcher01->GetRocketMagazine(1);
+                                launcher01->Activate();
+                            } else if(launcher02->rocketMagazine) { // t27
+                                launcher02->rocketMagazine--;
+                                //launcher02->GetRocketMagazine(2);
+                                launcher02->Activate();
+                            } else if(launcher03->rocketMagazine) { // t31
+                                launcher03->rocketMagazine--;
+                                //launcher03->GetRocketMagazine(3);
+                                launcher03->Activate();
+                            } else { // t42
+                                qassamsDodgedIronDome++;
+                                Leave(radarStore, 1);
+                                qassamAimedAtNonCriticalTarget++;
+                                delete rft;
+                                Cancel();
+                            }
+                            qassamAimedAtNonCriticalTarget++;
+                            Leave(radarStore, 1);
+                            delete rft;
+                            Cancel();
+                        }
+                    } else { // t10
+                        Leave(bmcStore,  1);
+                        goto p5;
+                    }
 
                 } else { // t6 Iron Dome will handle Qassam on its own
+                    p5:
                     if (Random() < 1 - QASSAM_CRITICAL) { // t20
-                        nonCriticalTargetHits++; // p6
+                        qassamAimedAtNonCriticalTarget++; // p6
                         Leave(radarStore, 1);
+                        delete rft;
                         Cancel();
-                    } else { // t21
+                    } else { // t21 - Handle critical Qassams
                         if(launcher01->rocketMagazine) { // t23
                             launcher01->rocketMagazine--;
-                            launcher01->GetRocketMagazine(1);
+                            //launcher01->GetRocketMagazine(1);
                             launcher01->Activate();
                         } else if(launcher02->rocketMagazine) { // t27
                             launcher02->rocketMagazine--;
-                            launcher02->GetRocketMagazine(2);
+                            //launcher02->GetRocketMagazine(2);
                             launcher02->Activate();
                         } else if(launcher03->rocketMagazine) { // t31
                             launcher03->rocketMagazine--;
-                            launcher03->GetRocketMagazine(3);
+                            //launcher03->GetRocketMagazine(3);
                             launcher03->Activate();
                         } else { // t42
                             criticalTargetHits++; // p36
+                            qassamsDodgedIronDome++;
+                            Leave(radarStore, 1);
+                            delete rft;
+                            Cancel();
+                        }
+
+                        if(Random() < TAMIR_ACCURACY) { // t17
+                            delete rft;
+                            qassamsShotDown++; // p26
+                            Leave(radarStore, 1);
+                            Cancel();
+                        } else { // t16
+                            delete rft;
+                            failedInterceptionByTamir++;
+                            criticalTargetHits++; // p27
                             Leave(radarStore, 1);
                             Cancel();
                         }
@@ -140,6 +230,7 @@ class Qassam : public Process { // TODO
                 }
 
                 Leave(radarStore, 1);
+                delete rft;
                 Cancel();
             }
         }

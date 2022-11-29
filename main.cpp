@@ -21,7 +21,7 @@ void exit_ims(string errorMessage) {
             " -J Percentage of human error in BMC\n"
             " -K Percentage of Qassam failure\n"
             " -M Percentage of Qassams that need operator intervention\n"
-            " -N Uniform time of Qassam flight [seconds]\n"
+            " -N Normal time of Qassam flight [seconds]\n"
             " -T Time to reload Iron Dome [minutes]%s\n", RED_BEGIN, errorMessage.c_str(), COLOR_END, CYAN_BEGIN,
             COLOR_END);
     exit(EXIT_FAILURE);
@@ -45,7 +45,12 @@ int fellInGaza;
 int flewToIsrael;
 
 int criticalTargetHits;
-int nonCriticalTargetHits;
+int qassamAimedAtNonCriticalTarget;
+int qassamsDodgedIronDome;
+int qassamsShotDown;
+int failedInterceptionByTamir;
+int missFiredTamirsDueToHumanError;
+int rocketsTimedOut;
 
 IronDomeLauncher *launcher01;
 IronDomeLauncher *launcher02;
@@ -126,6 +131,8 @@ int main(int argc, char *argv[]) {
                 string tmp = argv[i + 1];
                 if (tmp[0] == '-') {
                     exit_ims("!!!-N parameter can't be negative!!!");
+                } else if (atoi(argv[i + 1]) == 0) {
+                    exit_ims("!!!-N parameter must be higher than 0!!!");
                 }
                 args.N = atoi(argv[i + 1]);
             }
@@ -157,10 +164,26 @@ int main(int argc, char *argv[]) {
     launcher03 = new IronDomeLauncher;
 
     Run();
-    cout << "\nFELL IN GAZA   FLEW TO IZRAEL" << endl;
-    cout << fellInGaza << "   " << flewToIsrael << endl;
-    cout << "\nCRIT HIT   NONCRIT HIT" << endl;
-    cout << criticalTargetHits << "   " << nonCriticalTargetHits << endl;
+    cout << "\nFELL_IN_GAZA   FLEW_TO_ISRAEL" << endl;
+    cout << fellInGaza << "             " << flewToIsrael << endl;
+    cout << "AIMED_ON_CRITICAL_TARGET" << endl;
+    cout << flewToIsrael - qassamAimedAtNonCriticalTarget << endl;
+    cout << "NOT_AIMED_ON_CRITICAL_TARGET" << endl;
+    cout << qassamAimedAtNonCriticalTarget << endl;
+    cout << "\nCRIT_HIT   MISSED_CRITICAL_TARGET_WE_DONT_CARE_ABOUT_THEM" << endl;
+    cout << criticalTargetHits << "            " << qassamAimedAtNonCriticalTarget << endl;
+    cout << "CRIT_HIT_%" << endl;
+    cout << (double)criticalTargetHits / (double)(flewToIsrael - qassamAimedAtNonCriticalTarget) * 100 << " %" << endl;
+    cout << "\nQASSAMS_SHOT_DOWN" << endl;
+    cout << qassamsShotDown << endl;
+    cout << "\nFAILED_INTERCEPTION_BY_TAMIR" << endl;
+    cout << failedInterceptionByTamir << endl;
+    cout << "\nQASSAMS_DODGED_IRON_DOME" << endl;
+    cout << qassamsDodgedIronDome << endl;
+    cout << "\nMISSFIRED_TAMIRS_DUE_HUMAN_ERROR" << endl;
+    cout << missFiredTamirsDueToHumanError << endl;
+    cout << "\nROCKETS_TIMED_OUT" << endl;
+    cout << rocketsTimedOut << endl;
     cout << endl;
 
 
