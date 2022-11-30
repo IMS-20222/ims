@@ -14,6 +14,7 @@
 #include <iomanip>
 
 #define RED_BEGIN "\033[0;31m"
+#define GREEN_BEGIN "\033[1;32m"
 #define CYAN_BEGIN "\033[1;36m"
 #define COLOR_END "\033[0m"
 
@@ -22,6 +23,8 @@
 #define TAMIR_ACCURACY 0.9
 #define QASSAM_PRICE 800
 #define TAMIR_PRICE 125000
+#define IDF_BUDGET 24300000000
+#define ISRAEL_GDP 481590000000
 
 using namespace std;
 
@@ -56,14 +59,14 @@ extern int qassamsShotDown;
 extern int failedInterceptionByTamir;
 extern int missFiredTamirsDueToHumanError;
 extern int rocketsTimedOut;
-
+extern int tamirsFired;
 
 extern int fellInGaza;
 extern int flewToIsrael;
 extern argValues args;
 
 // Initialize radar store
-Store radarStore("Radar", 1000); // p28
+Store radarStore("Radar", 1200); // p28
 // Initialize BMC store (interception officers inside BMC)
 Store bmcStore("BMC", 2); // p28
 
@@ -72,18 +75,12 @@ class IronDomeLauncher : public Process {
 
     void Behavior() {
         while(1) {
-            //start: TODO DELETE
-            //rocketMagazine--;
             if (rocketMagazine == 0) {
-                //cout << Time << " RELOADING" << endl;
-                //cout << args.T << endl;
                 Wait(args.T);
-                //cout << Time << " RELOAD FINISHED" << endl;
                 rocketMagazine = 20;
             }
             Passivate();
             }
-            //goto start; TODO DELETE
     }
 
     void GetRocketMagazine(int launcherID) {
@@ -104,12 +101,14 @@ class RocketFlightTimeout: public Event {
         }
     void Behavior() {
         delete rocket;
-        bmcStore.Leave(1);
         if (Random() < 1 - QASSAM_CRITICAL) { // t38
             qassamAimedAtNonCriticalTarget++;
         } else { // t37
             criticalTargetHits++;
         }
+	if (!bmcStore.Empty()) {
+	    bmcStore.Leave(1);
+	}
         radarStore.Leave(1);
         rocketsTimedOut++;
     }
@@ -117,7 +116,7 @@ class RocketFlightTimeout: public Event {
 
 
 
-class Qassam : public Process { // TODO
+class Qassam : public Process {
     void Behavior() {
         // Qassam waiting to be fired - p1
         Wait(Uniform(0, args.Z)); // t2
@@ -147,7 +146,9 @@ class Qassam : public Process { // TODO
                     Enter(bmcStore, 1); // t8
                     Wait(5); // t9
                     if (Random() < (args.J * 0.01)){ // t11
-                        Leave(bmcStore, 1);
+			if (!bmcStore.Empty()) {
+                            Leave(bmcStore,  1);
+			}
                         if (Random() < 1 - QASSAM_CRITICAL) {
                             criticalTargetHits++; // p27
                             Leave(radarStore, 1);
@@ -157,12 +158,15 @@ class Qassam : public Process { // TODO
                             missFiredTamirsDueToHumanError++; // p24
                             if(launcher01->rocketMagazine) { // t23
                                 launcher01->rocketMagazine--;
+				tamirsFired++;
                                 launcher01->Activate();
                             } else if(launcher02->rocketMagazine) { // t27
                                 launcher02->rocketMagazine--;
+				tamirsFired++;
                                 launcher02->Activate();
                             } else if(launcher03->rocketMagazine) { // t31
                                 launcher03->rocketMagazine--;
+				tamirsFired++;
                                 launcher03->Activate();
                             } else { // t42
                                 qassamsDodgedIronDome++;
@@ -177,7 +181,9 @@ class Qassam : public Process { // TODO
                             Cancel();
                         }
                     } else { // t10
-                        Leave(bmcStore,  1);
+			if (!bmcStore.Empty()) {
+                            Leave(bmcStore,  1);
+			}
                         goto p5;
                     }
 
@@ -191,12 +197,15 @@ class Qassam : public Process { // TODO
                     } else { // t21 - Handle critical Qassams
                         if(launcher01->rocketMagazine) { // t23
                             launcher01->rocketMagazine--;
+			    tamirsFired++;
                             launcher01->Activate();
                         } else if(launcher02->rocketMagazine) { // t27
                             launcher02->rocketMagazine--;
+			    tamirsFired++;
                             launcher02->Activate();
                         } else if(launcher03->rocketMagazine) { // t31
                             launcher03->rocketMagazine--;
+			    tamirsFired++;
                             launcher03->Activate();
                         } else { // t42
                             criticalTargetHits++; // p36
@@ -236,3 +245,4 @@ class QassamGenerator : public Event {
         qassam->Activate();
     }
 };
+

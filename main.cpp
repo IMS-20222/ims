@@ -29,15 +29,23 @@ void exit_ims(string errorMessage) {
 
 // Function for printing out program arguments values
 void outputProgramArgs() {
-    cout << "******************************* ENTERED ARGS *******************************" << endl;
-    cout << setfill('.') << setw(60) << left << "R How many Qassams per day: " << right << ' ' <<  args.R << " Qassams/day"<< endl;
-    cout << setw(60) << left << "Z How long it takes to fire all rockets per day: "  << right << ' ' << args.Z << " sec" << endl;
-    cout << setw(60) << left << "J Percentage of human error in BMC: "  << right << ' ' << args.J << " %" << endl;
-    cout << setw(60) << left << "K Percentage of Qassam failure: "  << right << ' ' << args.K << " %" << endl;
-    cout << setw(60) << left << "M Percentage of Qassams that need operator intervention: "  << right << ' ' << args.M << " %" << endl;
-    cout << setw(60) << left << "N Uniform time of Qassam flight: "  << right << ' ' << args.N << " sec"<< endl;
-    cout << setw(60) << left << "T Time to reload Iron Dome: "  << right << ' ' << args.T << " sec"<< endl;
-    cout << "****************************************************************************" << endl;
+    cout << "+----------------------------------- " << CYAN_BEGIN << "ENTERED ARGS" << COLOR_END << " -----------------------------------+" << endl;
+    //cout << setfill('.') << setw(60) << left << "| R How many Qassams per day: " 				<< right << ' ' << args.R << " Qassams/day"	<< endl; 
+    cout << setfill(' ') << setw(60) << left << "| '-R' How many Qassams per day: ";
+    printf("%27s", (to_string(args.R) + " Qassams/day |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-Z' How long it takes to fire all rockets per day: ";
+    printf("%27s", (to_string(args.Z) + " sec |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-J' Percentage of human error in BMC: ";
+    printf("%27s", (to_string(args.J) + " % |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-K' Percentage of Qassam failure: ";
+    printf("%27s", (to_string(args.K) + " % |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-M' Percentage of Qassams that need operator intervention: ";
+    printf("%25s", (to_string(args.M) + " % |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-N' Normal time of Qassam flight: ";
+    printf("%27s", (to_string(args.N) + " sec |\n").c_str());
+    cout << setfill(' ') << setw(60) << left << "| '-T' Time to reload Iron Dome: ";
+    printf("%27s", (to_string(args.T) + " sec |\n").c_str());
+    cout << "+" << setfill('-') << setw(85) << right << "+" << endl;
 }
 
 
@@ -51,6 +59,7 @@ int qassamsShotDown;
 int failedInterceptionByTamir;
 int missFiredTamirsDueToHumanError;
 int rocketsTimedOut;
+int tamirsFired;
 
 IronDomeLauncher *launcher01;
 IronDomeLauncher *launcher02;
@@ -164,26 +173,54 @@ int main(int argc, char *argv[]) {
     launcher03 = new IronDomeLauncher;
 
     Run();
-    cout << "\nFELL_IN_GAZA   FLEW_TO_ISRAEL" << endl;
-    cout << fellInGaza << "             " << flewToIsrael << endl;
-    cout << "AIMED_ON_CRITICAL_TARGET" << endl;
-    cout << flewToIsrael - qassamAimedAtNonCriticalTarget << endl;
-    cout << "NOT_AIMED_ON_CRITICAL_TARGET" << endl;
-    cout << qassamAimedAtNonCriticalTarget << endl;
-    cout << "\nCRIT_HIT   MISSED_CRITICAL_TARGET_WE_DONT_CARE_ABOUT_THEM" << endl;
-    cout << criticalTargetHits << "            " << qassamAimedAtNonCriticalTarget << endl;
-    cout << "CRIT_HIT_%" << endl;
-    cout << (double)criticalTargetHits / (double)(flewToIsrael - qassamAimedAtNonCriticalTarget) * 100 << " %" << endl;
-    cout << "\nQASSAMS_SHOT_DOWN" << endl;
-    cout << qassamsShotDown << endl;
-    cout << "\nFAILED_INTERCEPTION_BY_TAMIR" << endl;
-    cout << failedInterceptionByTamir << endl;
-    cout << "\nQASSAMS_DODGED_IRON_DOME" << endl;
-    cout << qassamsDodgedIronDome << endl;
-    cout << "\nMISSFIRED_TAMIRS_DUE_HUMAN_ERROR" << endl;
-    cout << missFiredTamirsDueToHumanError << endl;
-    cout << "\nROCKETS_TIMED_OUT" << endl;
-    cout << rocketsTimedOut << endl;
-    cout << endl;
+
+    int qassamCost = args.R * QASSAM_PRICE;
+    int tamirCost = tamirsFired * TAMIR_PRICE;
+    double crit_percentage = (double)criticalTargetHits / (double)(flewToIsrael - qassamAimedAtNonCriticalTarget) * 100;
+    double idf_percentage = (double)tamirCost / (double)IDF_BUDGET * 100;
+    double gdp_percentage = (double)tamirCost / (double)ISRAEL_GDP * 100;
+    string rc(RED_BEGIN);
+    string gc(GREEN_BEGIN);
+    string ce(COLOR_END);
+
+    cout << endl << "+----------------------------- " << CYAN_BEGIN << "IRON DOME BATTERY STATS" << COLOR_END << " ------------------------------+" << endl;
+    cout << setfill(' ');
+    printf("|%-95s|\n", (gc + " Qassam Failures: " + ce).c_str());
+    printf("|%-84s|\n", ("  - Reached Israel: " + to_string(flewToIsrael)).c_str());
+    printf("|%-84s|\n", ("  - Fell in Gaza: " + to_string(fellInGaza)).c_str());
+    printf("|%-84s|\n", "");
+    printf("|%-95s|\n", (gc + " Qassam Targets: " + ce).c_str());
+    printf("|%-84s|\n", ("  - Aimed at critical target: " + to_string(flewToIsrael - qassamAimedAtNonCriticalTarget)).c_str());
+    printf("|%-84s|\n", ("  - Not aimed at critical target: " + to_string(qassamAimedAtNonCriticalTarget)).c_str());
+    printf("|%-84s|\n", "");
+    printf("|%-95s|\n", (gc + " Iron Dome Interceptions: " + ce).c_str());
+    printf("|%-84s|\n", ("  - Tamirs launched: " + to_string(tamirsFired)).c_str());
+    printf("|%-84s|\n", ("  - Qassams intercepted: " + to_string(qassamsShotDown)).c_str());
+    printf("|%-95s|\n", ("  - Critical target hits: " + rc + to_string(criticalTargetHits) + ce).c_str());
+    printf("|%-95s|\n", ("  - Critical target hit percentage: " + rc + to_string(crit_percentage) + " %" + ce).c_str());
+    printf("|%-84s|\n", ("  - Qassams not intercepted due to launchers reloading: " + to_string(qassamsDodgedIronDome)).c_str());
+    printf("|%-84s|\n", "");
+    printf("|%-95s|\n", (gc + " BMC (Battle Management & Weapon Control unit): " + ce).c_str());
+    printf("|%-84s|\n", ("  - Missfired Tamir rockets due to human error: " + to_string(missFiredTamirsDueToHumanError)).c_str());
+    printf("|%-84s|\n", ("  - Qassams not processed by BMC, operators took too long: " + to_string(rocketsTimedOut)).c_str());
+    printf("|%-84s|\n", "");
+    printf("|%-95s|\n", (gc + " Attack and Defence Cost: " + ce).c_str());
+    printf("|%-84s|\n", ("  - Price of Qassams: " + to_string(qassamCost) + " $").c_str());
+    printf("|%-84s|\n", ("  - Price of Tamirs: " + to_string(tamirCost) + " $").c_str());
+    printf("|%-84s|\n", ("  - Price of Tamirs to IDF budget: " + to_string(idf_percentage) + " %").c_str());
+    printf("|%-84s|\n", ("  - Price of Tamirs to Israel GDP: " + to_string(gdp_percentage) + " %").c_str());
+    printf("|%-84s|\n", "");
+    cout << "+" << setfill('-') << setw(85) << right << "+" << endl;
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
