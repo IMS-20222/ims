@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
     double idf_percentage = (double)tamirCost / (double)IDF_BUDGET * 100;
     double gdp_percentage = (double)tamirCost / (double)ISRAEL_GDP * 100;
     string rc(RED_BEGIN);
+    string gc(GREEN_BEGIN);
     string pc(PURPLE_BEGIN);
     string ce(COLOR_END);
 
@@ -195,7 +196,7 @@ int main(int argc, char *argv[]) {
     printf("|%-84s|\n", "");
     printf("|%-95s|\n", (pc + " Iron Dome Interceptions: " + ce).c_str());
     printf("|%-84s|\n", ("  - Tamirs launched: " + to_string(tamirsFired)).c_str());
-    printf("|%-84s|\n", ("  - Qassams intercepted: " + to_string(qassamsShotDown)).c_str());
+    printf("|%-95s|\n", ("  - Qassams intercepted: " + gc + to_string(qassamsShotDown) + ce).c_str());
     printf("|%-95s|\n", ("  - Critical target hits: " + rc + to_string(criticalTargetHits) + ce).c_str());
     printf("|%-95s|\n", ("  - Critical target hit percentage: " + rc + to_string(crit_percentage) + " %" + ce).c_str());
     printf("|%-84s|\n", ("  - Qassams not intercepted due to launchers reloading: " + to_string(qassamsDodgedIronDome)).c_str());
