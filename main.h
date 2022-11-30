@@ -14,7 +14,7 @@
 #include <iomanip>
 
 #define RED_BEGIN "\033[0;31m"
-#define GREEN_BEGIN "\033[1;32m"
+#define PURPLE_BEGIN "\033[1;35m"
 #define CYAN_BEGIN "\033[1;36m"
 #define COLOR_END "\033[0m"
 
