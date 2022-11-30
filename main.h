@@ -100,11 +100,9 @@ class RocketFlightTimeout: public Event {
     Process *rocket;
     public:
         RocketFlightTimeout(Process *rocket): rocket(rocket) {
-            Activate(Time + args.N);
+            Activate(Time + Normal(args.N,  0.1 * args.N));
         }
     void Behavior() {
-        Print(rocket->Name().c_str());
-        cout << " TIMED OUT" << endl;
         delete rocket;
         bmcStore.Leave(1);
         if (Random() < 1 - QASSAM_CRITICAL) { // t38
@@ -159,15 +157,12 @@ class Qassam : public Process { // TODO
                             missFiredTamirsDueToHumanError++; // p24
                             if(launcher01->rocketMagazine) { // t23
                                 launcher01->rocketMagazine--;
-                                //launcher01->GetRocketMagazine(1);
                                 launcher01->Activate();
                             } else if(launcher02->rocketMagazine) { // t27
                                 launcher02->rocketMagazine--;
-                                //launcher02->GetRocketMagazine(2);
                                 launcher02->Activate();
                             } else if(launcher03->rocketMagazine) { // t31
                                 launcher03->rocketMagazine--;
-                                //launcher03->GetRocketMagazine(3);
                                 launcher03->Activate();
                             } else { // t42
                                 qassamsDodgedIronDome++;
@@ -196,15 +191,12 @@ class Qassam : public Process { // TODO
                     } else { // t21 - Handle critical Qassams
                         if(launcher01->rocketMagazine) { // t23
                             launcher01->rocketMagazine--;
-                            //launcher01->GetRocketMagazine(1);
                             launcher01->Activate();
                         } else if(launcher02->rocketMagazine) { // t27
                             launcher02->rocketMagazine--;
-                            //launcher02->GetRocketMagazine(2);
                             launcher02->Activate();
                         } else if(launcher03->rocketMagazine) { // t31
                             launcher03->rocketMagazine--;
-                            //launcher03->GetRocketMagazine(3);
                             launcher03->Activate();
                         } else { // t42
                             criticalTargetHits++; // p36
@@ -238,66 +230,9 @@ class Qassam : public Process { // TODO
 };
 
 
-class QassamGenerator : public Event {  // model of system's input
-    void Behavior() {                  // --- behavior specification ---
+class QassamGenerator : public Event {
+    void Behavior() {
         Qassam *qassam = new Qassam;
         qassam->Activate();
-        //qassam->Output();
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-//// global objects:
-//Facility  Box("Box");
-//Histogram Table("Table",0,25,20);
-//
-//class Customer : public Process {
-//    double Prichod;                 // attribute of each customer
-//    void Behavior() {               // --- behavior specification ---
-//        Prichod = Time;               // incoming time
-//        Seize(Box);                   // start of service
-//        Wait(10);                     // time of service
-//        Release(Box);                 // end of service
-//        Table(Time-Prichod);          // waiting and service time
-//    }
-//};
-//
-//class Generator : public Event {  // model of system's input
-//    void Behavior() {               // --- behavior specification ---
-//        (new Customer)->Activate();   // new customer
-//        Activate(Time+Exponential(1e3/150));  //
-//    }
-//};
-
-
-
-////  deklarace  globálních  objektů
-//Facility  Box("Linka");
-//Histogram Tabulka("Tabulka",0,50,10);
-//
-//class Zakaznik : public Process { // třída zákazníků
-//    double Prichod;                 // atribut každého zákazníka
-//    void Behavior() {               // popis chování zákazníka
-//        Prichod = Time;               // čas příchodu zákazníka
-//        Seize(Box);                   // obsazení zařízení Box
-//        Wait(10);                     // obsluha
-//        Release(Box);                 // uvolnění
-//        Tabulka(Time-Prichod);        // doba obsluhy a čekání
-//    }
-//};
-//
-//class Generator : public Event {  // generátor zákazníků
-//    void Behavior() {               // popis chování generátoru
-//        (new Zakaznik)->Activate();     // nový zákazník v čase Time
-//        Activate(Time+Exponential(1e3/150)); // interval mezi příchody
-//    }
-//};

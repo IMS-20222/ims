@@ -185,29 +185,5 @@ int main(int argc, char *argv[]) {
     cout << "\nROCKETS_TIMED_OUT" << endl;
     cout << rocketsTimedOut << endl;
     cout << endl;
-
-
-
     return 0;
 }
-
-
-
-//    Print("***** MODEL1 *****\n");
-//    Init(0,1000);              // inicializace experimentu
-//    (new Generator)->Activate(); // generátor zákazníků, aktivace
-//    Run();                     // simulace
-//    Box.Output();              // tisk výsledků
-//    Tabulka.Output();
-//        return 0;
-
-
-
-//    Print(" model2 - SIMLIB/C++ example\n");
-//    SetOutput("model2.out");
-//    Init(0,1000);              // experiment initialization for time 0..1000
-//    (new Generator)->Activate(); // customer generator
-//    Run();                     // simulation
-//    Box.Output();              // print of results
-//    Table.Output();
-//    return 0;
