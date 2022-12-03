@@ -30,7 +30,6 @@ void exit_ims(string errorMessage) {
 // Function for printing out program arguments values
 void outputProgramArgs() {
     cout << "+----------------------------------- " << CYAN_BEGIN << "ENTERED ARGS" << COLOR_END << " -----------------------------------+" << endl;
-    //cout << setfill('.') << setw(60) << left << "| R How many Qassams per day: " 				<< right << ' ' << args.R << " Qassams/day"	<< endl; 
     cout << setfill(' ') << setw(60) << left << "| '-R' How many Qassams per day: ";
     printf("%27s", (to_string(args.R) + " Qassams/day |\n").c_str());
     cout << setfill(' ') << setw(60) << left << "| '-Z' How long it takes to fire all rockets per day: ";
@@ -214,14 +213,3 @@ int main(int argc, char *argv[]) {
     cout << "+" << setfill('-') << setw(85) << right << "+" << endl;
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-

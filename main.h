@@ -29,7 +29,6 @@
 
 using namespace std;
 
-
 string optionToFind;
 
 /**
@@ -246,4 +245,3 @@ class QassamGenerator : public Event {
         qassam->Activate();
     }
 };
-
